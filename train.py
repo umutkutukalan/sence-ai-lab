@@ -11,8 +11,18 @@ df = pd.read_csv('data_v1.csv')
 df['label'] = df['label'].str.strip().str.lower()
 df['text'] = df['text'].str.lower()
 
+# Basit bir Türkçe stop word listesi (daha kapsamlı bir liste kullanılabilir)
+turkce_stop_words = [
+    've', 'bir', 'bu', 'da', 'de', 'için', 'ile', 'gibi', 'ama', 'çok',
+    'ben', 'sen', 'o', 'biz', 'siz', 'onlar', 'ne', 'mi', 'mı',
+    # Daha fazla stop word eklenebilir
+]
+
 # Vektörleştirici (Kelimeleri sayısal hale getirelim)
-vectorizer = TfidfVectorizer()
+vectorizer = TfidfVectorizer(
+    stop_words=turkce_stop_words,
+    ngram_range=(1, 2) # Hem tek kelimeleri hem de ikili kelime gruplarını dikkate alalım
+)
 X = vectorizer.fit_transform(df['text'])
 y = df['label']
 
@@ -31,7 +41,7 @@ print(f"--- Model Performansı ---")
 print(f"Başarı Oranı: %{accuracy * 100:.2f}")
 print(f"Rapor:\n{classification_report(y_test, predictions)}")
 
-# Canlı test yapalım
-sample = ["Bu akşamki konser harikaydı, çok eğlendim!"]
+# Stres Testi
+sample = ["Backend tarafındaki karmaşık bugları temizledikten sonra gelen o hafifleme hissi paha biçilemez."]
 sample_vectorized = vectorizer.transform(sample)
 print(f"\nÖrnek Test: '{sample[0]}' -> Tahmin: {model.predict(sample_vectorized)[0]}")
