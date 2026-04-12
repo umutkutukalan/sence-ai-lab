@@ -5,6 +5,9 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report
 
+import os
+import csv
+
 df = pd.read_csv("data/tense.csv", encoding='latin-1')
 
 df.columns = df.columns.str.strip() # Sütun isimlerindeki boşlukları temizleyelim
@@ -44,3 +47,36 @@ for cumle in stres_testi:
     vec = vectorizer.transform([cumle.lower()])
     tahmin = model.predict(vec)[0]
     print(f"Cümle: {cumle} -> Tahmin: {tahmin}")
+    
+    
+def save_to_custom_dataset(sentence, tense):
+    file_path = "data/data_ozel_yokdil.csv"
+    file_exists = os.path.isfile(file_path)
+    
+    with open(file_path, mode='a', newline='', encoding='utf-16') as f:
+        write = csv.writer(f)
+        if not file_exists:
+            write.writerow(['sentence', 'tense'])
+        write.writerow([sentence, tense])
+    
+print("\n--- Sense-AI Eğitim Modu Aktif ---")
+print("Çıkmak için 'q' yazabilirsiniz.")
+
+while True:
+    user_input = input("Analiz edilecek cümleyi girin: ")
+    if user_input.lower() == 'q':
+        break
+    
+    vec = vectorizer.transform([user_input.lower()])
+    prediction = model.predict(vec)[0]
+    
+    print(f"Tahmin Edilen Zaman: {prediction}")
+    feedback = input("Bu tahmin doğru mu? (e/h): ")
+    
+    if feedback == 'y':
+        final_tense = prediction
+    else:
+        final_tense = input("Doğru tense nedir? (örn: past, future perfect, present perfect): ").lower()
+        
+    save_to_custom_dataset(user_input, final_tense)
+    print("Veri kaydedildi. Teşekkürler!\n")
