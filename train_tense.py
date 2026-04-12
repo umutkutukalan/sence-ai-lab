@@ -8,14 +8,27 @@ from sklearn.metrics import accuracy_score, classification_report
 import os
 import csv
 
-df = pd.read_csv("data/tense.csv", encoding='latin-1')
+df_main = pd.read_csv("data/tense.csv", encoding='latin-1')
+df_main.columns = df_main.columns.str.strip() # Sütun isimlerindeki boşlukları temizleyelim
 
-df.columns = df.columns.str.strip() # Sütun isimlerindeki boşlukları temizleyelim
+ozel_veri_yolu = "data/data_ozel_yokdil.csv"
+
+if os.path.exists(ozel_veri_yolu):
+    #Not: Kaydederken hangi encoding'i kullandıysan
+    df_ozel = pd.read_csv(ozel_veri_yolu, encoding='utf-16')
+    df_ozel.columns = df_ozel.columns.str.strip() # Sütun isimlerindeki boşlukları temizleyelim
+    
+    # İki veri setini birleştirelim
+    df = pd.concat([df_main, df_ozel], ignore_index=True)
+    print(f"🔄 Özel veri seti yüklendi! Toplam veri: {len(df)}")
+else:
+    df = df_main
+    print(f"📊 Sadece ana veri seti ile başlanıyor. Toplam veri: {len(df)}")
 
 print(f"--Veri Dağılımı (Sınıf Bazlı)")
-print(df['tense'].value_counts())
+print(df_main['tense'].value_counts())
 
-df.dropna(subset=['sentence'], inplace=True)
+df = df.dropna(subset=['sentence'])
 df['sentence'] = df['sentence'].astype(str).str.lower()
 
 vectorizer = TfidfVectorizer(
